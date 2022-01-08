@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElectronPractice</title>
+  <link href="../styles.css" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/bootstrap.min.css">
+</head>
+<body>
+  
+  <div class="modal-container container container-fluid d-flex flex-column justify-content-center align-items-center">
+    <div class="card shadow pt-2 pb-2">
+      <div class="card-body">
+        <h5 class="card-title">Edit</h5>
+        <input type="text" class="form-control mt-3 mb-3" value="Editing Value...">
+        <a href="#" class="card-link btn btn-outline-danger" id="cancelBtn">Cancel</a>
+        <a href="#" class="card-link btn btn-outline-danger">Update</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const {ipcRenderer} = require("electron")
+    let cancelBtn=document.querySelector("#cancelBtn")
+    cancelBtn.addEventListener("click",()=>{
+      ipcRenderer.send("newWindow:close")
+    })
+  </script>
+</body>
+</html>
