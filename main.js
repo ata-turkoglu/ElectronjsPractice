@@ -1,27 +1,31 @@
 const electron = require("electron")
-const url = require("url")
-const path = require("path");
 
 const { app, BrowserWindow, Menu, focusedWindow, ipcMain } = electron
 
-let mainWindow;
-let addNew
+let mainWindow, addNew
+let list = []
 
 function createWindow(){
-  const mainWindow = new BrowserWindow({
-    transparent:true,
+  mainWindow = new BrowserWindow({
+    width:1000, height:600,
     webPreferences: {
       nodeIntegration: true,      
       contextIsolation: false,
       enableRemoteModule: true,
     },
   })
+  mainWindow.setResizable(true)
   mainWindow.loadFile('main.html')
+
+  mainWindow.on("closed",()=>{
+    mainWindow=null
+  })
 }
 
 function addWindow(){
+
   addNew = new BrowserWindow({
-    width:500,
+    width:350,
     height:300,
     title:"New Window",
     transparent:true,
@@ -30,17 +34,22 @@ function addWindow(){
       contextIsolation: false,
       enableRemoteModule: true,
     },
-    frame:false
+    frame:false,
+    parent:mainWindow
   })
+  
   addNew.loadFile('pages/newWindow.html')
   addNew.setResizable(false);
-  addNew.on("close", () => {
-    addNew = null;
-  });
+  ipcMain.on("newWindow:close",()=>{
+    addNew.close()
+    addNew=null
+  })
 }
 
 app.whenReady().then(()=>{
+  
   createWindow()
+
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
    
@@ -50,21 +59,27 @@ app.whenReady().then(()=>{
     })
   })
 
+  app.on("window-all-closed",()=>{
+    if(process.platform!== "darwin"){
+      app.quit()
+    }
+  })
+
+  ipcMain.on("newWindow:save",(err,data)=>{
+    if(data){
+      let obj={
+        id:list.length+1,
+        text:data
+      }
+      list.push(obj)
+      mainWindow.webContents.send("list:addItem",obj)
+      addNew.close()
+      addNew=null
+    }
+  })
+
   const mainMenu = Menu.buildFromTemplate(mainManuTemplate)
   Menu.setApplicationMenu(mainMenu)
-
-  ipcMain.on("key:inputValue",(err,data)=>{
-    console.log(data)
-  })
-
-  ipcMain.on("key:openNewWindow",()=>{
-
-  })
-
-  ipcMain.on("newWindow:close",()=>{
-    addNew.close()
-    addNew=null
-  })
 
 })
 
